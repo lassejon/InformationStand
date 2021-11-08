@@ -55,7 +55,7 @@ namespace ConsoleApp
 
         public void FindUser()
         {
-
+            
         }
 
         public void ShowUsers()
@@ -68,5 +68,11 @@ namespace ConsoleApp
 
         }
 
+        private bool IsValidPhoneNumber(string input)
+        {
+            const int lengthOfNumber = 8;
+
+            return input.Length == lengthOfNumber && int.TryParse(input, out _);
+        }
     }
 }

@@ -1,27 +1,37 @@
-﻿namespace ConsoleApp
+﻿using CsvHelper.Configuration.Attributes;
+
+namespace ConsoleApp
 {
     public class User
     {
-        public int TelephoneNumber { get; set; }
+        [Index(0)]
+        public int PhoneNumber { get; set; }
+        [Index(1)]
         public string FirstName { get; set; }
-        public string SurName { get; set; }
+        [Index(2)]
+        public string LastName { get; set; }
+        [Index(3)]
         public string Address { get; set; }
-        public string ZipCode { get; set; }
+        [Index(4)]
+        public int ZipCode { get; set; }
+        [Index(5)]
         public string City { get; set; }
+        [Index(6)]
         public string Gender { get; set; }
-        public string Age { get; set; }
+        [Index(7)]
+        public int Age { get; set; }
 
         public User()
         {
-
+            
         }
 
-        public User(int telephoneNumber, string firstName, string surName,
-            string address, string zipCode, string city, string gender, string age)
+        public User(int phoneNumber, string firstName, string lastName,
+            string address, int zipCode, string city, string gender, int age)
         {
-            TelephoneNumber = telephoneNumber;
+            PhoneNumber = phoneNumber;
             FirstName = firstName;
-            SurName = surName;
+            LastName = lastName;
             Address = address;
             ZipCode = zipCode;
             City = city;
@@ -29,20 +39,18 @@
             Age = age;
         }
 
-        public User FindUser()
+        public override string ToString()
         {
-
+            var userString = $"{PhoneNumber};" +
+                             $"{FirstName};" +
+                             $"{LastName};" +
+                             $"{Address};" +
+                             $"{ZipCode};" +
+                             $"{City};" +
+                             $"{Gender};" +
+                             $"{Age}";
+            
+            return userString;
         }
-
-        public User[] ReadUsers()
-        {
-
-        }
-
-        public void WriteUser()
-        {
-
-        }
-
     }
 }
