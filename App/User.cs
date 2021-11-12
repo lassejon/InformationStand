@@ -41,14 +41,14 @@ namespace ConsoleApp
 
         public override string ToString()
         {
-            var userString = $"{PhoneNumber};" +
-                             $"{FirstName};" +
-                             $"{LastName};" +
-                             $"{Address};" +
-                             $"{ZipCode};" +
-                             $"{City};" +
-                             $"{Gender};" +
-                             $"{Age}";
+            var userString = $"{PhoneNumber}," +
+                             $" {FirstName} " +
+                             $"{LastName}," +
+                             $" {Address}," +
+                             $" {ZipCode}," +
+                             $" {City}," +
+                             $" {Gender}," +
+                             $" {Age}";
             
             return userString;
         }

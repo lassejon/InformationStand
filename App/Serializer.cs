@@ -17,11 +17,6 @@ namespace ConsoleApp
             Path = Directory.GetCurrentDirectory() + fileName;
         }
 
-        public bool Find(User user)
-        {
-            return true;
-        }
-
         public IEnumerable<User> ReadUsers()
         {
             var config = new CsvConfiguration(CultureInfo.InvariantCulture) { Delimiter = ";" };
@@ -31,47 +26,41 @@ namespace ConsoleApp
             return csv.GetRecords<User>().ToList();
         }
 
-        public bool WriteUser(User user)
+        public void WriteUser(User user)
         {
-            if (Exists(user))
-            {
-                return false;
-            }
-            
             var config = new CsvConfiguration(CultureInfo.InvariantCulture) { Delimiter = ";" };
             using var reader = new StreamWriter(Path, true);
             using var csv = new CsvWriter(reader, config);
             csv.WriteRecord(user);
-            
-            return true;
+            csv.NextRecord();
         }
 
-        private bool Exists(User user)
+        public bool Exists(int phoneNumber)
         {
             var users = ReadUsers();
 
-            return users.Any(userFromUsers => userFromUsers.PhoneNumber == user.PhoneNumber);
+            return users.Any(userFromUsers => userFromUsers.PhoneNumber == phoneNumber);
         }
 
-        public List<User> FindUsersWithSamePhoneNumber(int phoneNumber)
+        public IEnumerable<User> FindUsersWithSamePhoneNumber(int phoneNumber)
         {
             var users = ReadUsers();
 
             return users.Where(user => phoneNumber == user.PhoneNumber).ToList();
         }
         
-        public List<string> FindUsersWithSameFirstName(string firstName)
+        public IEnumerable<User> FindUsersWithSameFirstName(string firstName)
         {
             var users = ReadUsers();
 
-            return (from user in users where firstName.Equals(user.FirstName) select user.FirstName).ToList();
+            return (from user in users where firstName.ToLower().Equals(user.FirstName.ToLower()) select user).ToList();
         }
         
-        public List<string> FindUsersWithSameLastName(string lastName)
+        public IEnumerable<User> FindUsersWithSameLastName(string lastName)
         {
             var users = ReadUsers();
 
-            return (from user in users where lastName.Equals(user.LastName) select user.LastName).ToList();
+            return (from user in users where lastName.Equals(user.LastName) select user).ToList();
         }
         
         private IEnumerable<string> ReadUsersOld()
@@ -93,7 +82,7 @@ namespace ConsoleApp
         
         private bool WriteUserOld(User user)
         {
-            if (Exists(user))
+            if (Exists(user.PhoneNumber))
             {
                 return false;
             }
