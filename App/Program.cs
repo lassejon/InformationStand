@@ -1,13 +1,10 @@
-﻿using System;
-
-namespace ConsoleApp
+﻿namespace ConsoleApp
 {
-    class Program
+    internal static class Program
     {
-        static void Main(string[] args)
+        private static void Main()
         {
-            var menu = new Menu();
-            menu.Start();
+            Menu.Start();
         }
     }
 }

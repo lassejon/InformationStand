@@ -4,267 +4,240 @@ using System.Linq;
 
 namespace ConsoleApp
 {
-    public class Menu
+    public static class Menu
     {
-        private const string Options = "[O] Opret    [F] Find    [V] Vis alle    [Q] Afslut";
-        private const string Header = "<<< Christian Mørk Information Systems - Nyhedsbrevregistrering >>>";
         private const string NewLinesToOptions = "\n\n\n\n\n";
-        private const string NewLinesToStartMessage = "\n\n";
-        private const string StartMessage = "Her kan du oprette ny bruger eller gennemsøge eksisterende.";
-        private const string ChooseMenu = "\nVælg funktion : ";
+        private const string Choose = "\nVælg funktion : ";
 
-        private Serializer Serializer { get; set; }
-
-        public Menu()
+        public static void Start(string message = "Her kan du oprette ny bruger eller søge efter eksisterende.")
         {
-            Serializer = new Serializer();
-        }
-
-        public void Start()
-        {
+            Console.Clear();
             ShowHeader();
-            Console.WriteLine(StartMessage);
+            Console.WriteLine(message);
             ShowOptions();
-            Action();
+            ActionForNextMenu();
         }
 
         private static void ShowHeader()
         {
-            Console.WriteLine(Header);
-            Console.WriteLine(NewLinesToStartMessage);
+            Console.WriteLine("<<< Christian Mørk Information Systems - Nyhedsbrevregistrering >>>");
+            Console.WriteLine("\n\n");
         }
 
         private static void ShowOptions()
         {
             Console.WriteLine(NewLinesToOptions);
-            Console.WriteLine(Options);
-            Console.Write($"{ChooseMenu}");
+            Console.WriteLine("[O] Opret    [F] Find    [V] Vis alle    [Q] Afslut");
+            Console.Write(Choose);
         }
 
-        private void Action()
+        private static void ActionForNextMenu()
         {
-            var isValidInput = true;
-            do
+            var choice = Console.ReadLine().ToLower();
+            switch (choice)
             {
-                var choice = Console.ReadLine()?.ToLower();
-                switch (choice) {
-                    case "o":
-                        CreateUser();
-                        isValidInput = true;
-                        break;
-                    case "f":
-                        FindUser();
-                        isValidInput = true;
-                        break;
-                    case "v":
-                        var users = Serializer.ReadUsers().ToList();
-                        ShowUsers(users);
-                        isValidInput = true;
-                        break;
-                    case "q":
-                        isValidInput = true;
-                        break;
-                    default:
-                        isValidInput = false;
-                        break;
-                }
-            } while (!isValidInput);
-        }
-        
-
-        public void FindUser()
-        {
-            var isValidInput = true;
-            do
-            {
-                ShowHeader();
-                Console.WriteLine("Find bruger(e) ved en af følgende oplysninger:");
-                Console.WriteLine($"[T] Telefonnummer    [F] Fornavn    [E] Efternavn    [Q] Afslut");
-                
-                Console.Write(ChooseMenu);
-                var choice = Console.ReadLine()?.ToLower();
-                switch (choice)
-                {
-                    case "t":
-                        var phoneNumber = GetPhoneNumber();
-                        var usersWithSamePhoneNumber = Serializer.FindUsersWithSamePhoneNumber(phoneNumber).ToList();
-                        ShowUsers(usersWithSamePhoneNumber);
-                        isValidInput = true;
-                        break;
-                    case "f":
-                        Console.Write("Fornavn: ");
-                        var lastName = Console.ReadLine();
-                        var usersWithSameFirstName = Serializer.FindUsersWithSameFirstName(lastName).ToList();
-                        ShowUsers(usersWithSameFirstName);
-                        isValidInput = true;
-                        break;
-                    case "e":
-                        Console.Write("Efternavn: ");
-                        var firstName = Console.ReadLine();
-                        var usersWithSameLastName = Serializer.FindUsersWithSameLastName(firstName).ToList();
-                        ShowUsers(usersWithSameLastName);
-                        isValidInput = true;
-                        break;
-                    case "q":
-                        isValidInput = true;
-                        break;
-                    default:
-                        isValidInput = false;
-                        break;
-                }
-            } while (!isValidInput);
+                case "o":
+                    CreateUser();
+                    break;
+                case "f":
+                    FindUser();
+                    break;
+                case "v":
+                    var users = Serializer.ReadUsers().ToList();
+                    ShowUsers(users);
+                    Start();
+                    break;
+                case "q":
+                    break;
+                default:
+                    Start();
+                    break;
+            }
         }
 
-        public void ShowUsers(List<User> users)
+        private static void FindUser()
         {
-            var i = 0;
+            Console.Clear();
+            ShowHeader();
+            Console.WriteLine("Find bruger(e) ved en af følgende oplysninger:");
+            Console.WriteLine($"[T] Telefonnummer    [F] Fornavn    [E] Efternavn    [Q] Afslut");
+            
+            Console.Write(Choose);
+            var choice = Console.ReadLine().ToLower();
+            switch (choice)
+            {
+                case "t":
+                    var phoneNumber = GetPhoneNumber();
+                    var usersWithSamePhoneNumber = Serializer.FindUsersWithSamePhoneNumber(phoneNumber).ToList();
+                    ShowUsers(usersWithSamePhoneNumber);
+                    break;
+                case "f":
+                    Console.Write("Fornavn: ");
+                    var lastName = Console.ReadLine().ToLower();
+                    var usersWithSameFirstName = Serializer.FindUsersWithSameFirstName(lastName).ToList();
+                    ShowUsers(usersWithSameFirstName);
+                    break;
+                case "e":
+                    Console.Write("Efternavn: ");
+                    var firstName = Console.ReadLine().ToLower();
+                    var usersWithSameLastName = Serializer.FindUsersWithSameLastName(firstName).ToList();
+                    ShowUsers(usersWithSameLastName);
+                    break;
+                case "q":
+                    Start();
+                    return;
+            }
+            FindUser();
+        }
 
+        public static void ShowUsers(List<User> users)
+        {
+            Console.Clear();
+            var page = 0;
+            var usersOnPages = UsersOnPages(users);
             do
             {
+                Console.Clear();
                 ShowHeader();
                 Console.WriteLine("Brugere:");
                 Console.WriteLine();
 
-                var maxUsersOnPage = i + 15;
-                while (i < maxUsersOnPage && i < users.Count)
+                if (users.Count > 0)
                 {
-                    Console.WriteLine($"{i + 1}: {users[i]}");
-                    i++;
+                    usersOnPages[page].ForEach(Console.WriteLine);
                 }
-
-                Console.WriteLine(NewLinesToOptions);
-                i = ShowFooter(i, users.Count, users);
-                
-            } while(i >= 0);
-            
-            Start();
+                page = ShowCorrectFooterAndCalculatePage(page, usersOnPages.Count);
+            } while(page >= 0);
         }
 
-        private int ShowFooter(int i, int count, List<User> users)
+        public static List<List<string>> UsersOnPages(List<User> users)
         {
+            var usersOnSamePage = new List<string>();
+            var usersOnPages = new List<List<string>>();
+            for (var i = 0; i < users.Count; i++)
+            {
+                if ((i > 0 && i % 15 == 0))
+                {
+                    usersOnPages.Add(usersOnSamePage);
+                    usersOnSamePage = new List<string>();
+                }
+
+                if (i == users.Count - 1)
+                {
+                    usersOnSamePage.Add($"{i + 1}: {users[i]}");
+                    usersOnPages.Add(usersOnSamePage);
+                    break;
+                }
+                usersOnSamePage.Add($"{i + 1}: {users[i]}");
+            }
+
+            return usersOnPages;
+        }
+        
+        private static int CalculatePageToShow(int page, string choice)
+        {
+            switch (choice)
+            {
+                // go back to previous menu
+                case "q":
+                    page = -1;
+                    break;
+                // previous page
+                case "f":
+                    page--;
+                    break;
+                // next page
+                case "n":
+                    page++;
+                    break;
+            }
+
+            // default will be to stay on current page
+            return page;
+        }
+        
+
+        private static int ShowCorrectFooterAndCalculatePage(int page, int count)
+        {
+            string choice;
+            
             // all users can be shown on one page
-            if (count < 15)
+            if (count is 1 or 0)
             {
                 Console.WriteLine("[Q] Afslut");
-                return ChoicesFromOnlyPage(users, i);
+                Console.Write(Choose);
+                
+                choice = Console.ReadLine().ToLower();
+                switch (choice)
+                {
+                    case "q":
+                        return CalculatePageToShow(page, choice);
+                    default:
+                        return page;
+                }
             }
 
             // there are more users than can be shown on the first page
-            if (i == 15 && i < count)
+            if (page == 0)
             {
                 Console.WriteLine("[N] Næste Side     [Q] Afslut");
-                return ChoicesFromFirstPage(users, i);
+                Console.Write(Choose);
+                
+                choice = Console.ReadLine().ToLower();
+                switch (choice)
+                {
+                    case "n":
+                    case "q":
+                        return CalculatePageToShow(page, choice);
+                    default:
+                        return page;
+                }
             }
 
             // there are users on the left and right page
-            if (i < count)
+            if (page < count - 1)
             {
                 Console.WriteLine("[F] Forrige side    [N] Næste Side     [Q] Afslut");
-                return ChoicesFromMiddlePage(users, i);
+                Console.Write(Choose);
+                
+                choice = Console.ReadLine().ToLower();
+                switch (choice)
+                {
+                    case "f":
+                    case "n":
+                    case "q":
+                        return CalculatePageToShow(page, choice);
+                    default:
+                        return page;
+                }
             }
 
             // currently on the last page
             Console.WriteLine("[F] Forrige side    [Q] Afslut");
-            return ChoicesFromLastPage(users, i);
-        }
-        
-        private int ChoicesFromFirstPage(List<User> users, int i)
-        {
-            Console.Write(ChooseMenu);
-            var choice = Console.ReadLine()?.ToLower();
-            switch (choice)
-            {
-                case "n":
-                    break;
-                case "q":
-                    i = -1;
-                    break;
-                default:
-                    i = 0;
-                    break;
-            }
-            return i;
-        }
-
-        private int ChoicesFromOnlyPage(List<User> users, int i)
-        {
+            Console.Write(Choose);
             
-            Console.Write(ChooseMenu);
-            var choice = Console.ReadLine()?.ToLower();
-            switch (choice)
-            {
-                case "q":
-                    i = -1;
-                    break;
-                default:
-                    i = 0;
-                    break;
-            }
-
-            return i;
-        }
-
-        private int ChoicesFromLastPage(List<User> users, int i)
-        {
-            
-            Console.Write(ChooseMenu);
-            var choice = Console.ReadLine()?.ToLower();
+            choice = Console.ReadLine().ToLower();
             switch (choice)
             {
                 case "f":
-                    i -= 15;;
-                    while (i % 15 != 0)
-                    {
-                        i--;
-                    }
-                    break;
                 case "q":
-                    i = -1;
-                    break;
+                    return CalculatePageToShow(page, choice);
                 default:
-                    while (i % 15 != 0)
-                    {
-                        i--;
-                    }
-                    break;
+                    return page;
             }
-
-            return i;
         }
 
-        private int ChoicesFromMiddlePage(List<User> users, int i)
+        private static void CreateUser()
         {
-            Console.Write(ChooseMenu);
-            var choice = Console.ReadLine()?.ToLower();
-            switch (choice)
-            {
-                case "f":
-                    i -= 30;
-                    break;
-                case "n":
-                    break;
-                case "q":
-                    i = -1;
-                    break;
-                default:
-                    i = i - 15;
-                    break;
-            }
-            return i;
-        }
-
-        public void CreateUser()
-        {
-            Console.WriteLine(Header);
-            Console.WriteLine(NewLinesToStartMessage);
+            Console.Clear();
+            ShowHeader();
 
             var phoneNumber = GetPhoneNumber();
             
-            while (Serializer.Exists(phoneNumber))
+            if (Serializer.Exists(phoneNumber))
             {
-                Console.WriteLine("Telefonnummeret eksisterer i databasen. Prøv igen.");
-                Console.WriteLine();
-                phoneNumber = GetPhoneNumber();
+                Start("Telefonnummeret eksisterer page databasen. Prøv igen.");
+                return;
             }
             
             Console.Write("Fornavn: ");
@@ -297,20 +270,16 @@ namespace ConsoleApp
                 ageInput = Console.ReadLine();
             } while (!int.TryParse(ageInput, out age));
 
+            
             var newUser = new User(phoneNumber, firstName, lastName, address, int.Parse(zipCode),
                 city, gender, age);
-            
+        
             Serializer.WriteUser(newUser);
-            
-            Console.WriteLine("Denne bruger: ");
-            Console.WriteLine(newUser);
-            Console.WriteLine("er nu gemt.");
-            
-            ShowOptions();
-            Action();
+
+            Start($"Denne bruger: {newUser} er nu gemt");
         }
 
-        private int GetPhoneNumber()
+        private static int GetPhoneNumber()
         {
             string phoneNumberInput;
             do
@@ -319,16 +288,16 @@ namespace ConsoleApp
                 phoneNumberInput = Console.ReadLine();
             } while (!IsValidPhoneNumber(phoneNumberInput));
 
-            return int.Parse(phoneNumberInput);
+            return int.Parse(phoneNumberInput!);
         }
 
-        private bool IsValidZipCode(string zipCode)
+        private static bool IsValidZipCode(string zipCode)
         {
             const int lengthOfZipCode = 4;
 
              return zipCode.Length == lengthOfZipCode && int.TryParse(zipCode, out _);
         }
-        private bool IsValidPhoneNumber(string phoneNumber)
+        private static bool IsValidPhoneNumber(string phoneNumber)
         {
             const int lengthOfNumber = 8;
 

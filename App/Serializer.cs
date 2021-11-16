@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -8,87 +7,68 @@ using CsvHelper.Configuration;
 
 namespace ConsoleApp
 {
-    public class Serializer
+    public static class Serializer
     {
-        private string Path { get; set; }
-        
-        public Serializer(string fileName = "/users.csv")
-        {
-            Path = Directory.GetCurrentDirectory() + fileName;
-        }
+        // current directory plus the hardcoded name on the data file
+        private static readonly string Path = Directory.GetCurrentDirectory() + "/users.csv";
 
-        public IEnumerable<User> ReadUsers()
+        public static List<User> ReadUsers()
         {
+            // configure which delimiter to use
             var config = new CsvConfiguration(CultureInfo.InvariantCulture) { Delimiter = ";" };
+            
+            // create reader stream (connection) to file 
             using var reader = new StreamReader(Path);
+            
+            // specify it's a csv (comma separated value) stream
             using var csv = new CsvReader(reader, config);
             
+            // getrecords reads every line and convert it to a user object and saves it to a list
             return csv.GetRecords<User>().ToList();
         }
 
-        public void WriteUser(User user)
+        public static void WriteUser(User user)
         {
             var config = new CsvConfiguration(CultureInfo.InvariantCulture) { Delimiter = ";" };
             using var reader = new StreamWriter(Path, true);
             using var csv = new CsvWriter(reader, config);
+            
+            // writes the user to the file
             csv.WriteRecord(user);
+            
+            // creates a new line at the end of file, so if we write another user later,
+            // it will be saved on a new line
             csv.NextRecord();
         }
 
-        public bool Exists(int phoneNumber)
+        public static bool Exists(int phoneNumber)
         {
             var users = ReadUsers();
 
+            // linq expression that check the list for the same phonenumber
             return users.Any(userFromUsers => userFromUsers.PhoneNumber == phoneNumber);
         }
-
-        public IEnumerable<User> FindUsersWithSamePhoneNumber(int phoneNumber)
+        
+        public static List<User> FindUsersWithSamePhoneNumber(int phoneNumber)
         {
             var users = ReadUsers();
-
+            
             return users.Where(user => phoneNumber == user.PhoneNumber).ToList();
         }
         
-        public IEnumerable<User> FindUsersWithSameFirstName(string firstName)
+        public static List<User> FindUsersWithSameFirstName(string firstName)
         {
             var users = ReadUsers();
 
+            // linq expression that loops through users and selects users with same firstname as inputted
             return (from user in users where firstName.ToLower().Equals(user.FirstName.ToLower()) select user).ToList();
         }
         
-        public IEnumerable<User> FindUsersWithSameLastName(string lastName)
+        public static List<User> FindUsersWithSameLastName(string lastName)
         {
             var users = ReadUsers();
 
             return (from user in users where lastName.Equals(user.LastName) select user).ToList();
-        }
-        
-        private IEnumerable<string> ReadUsersOld()
-        {
-            IEnumerable<string> users;
-         
-            try
-            {
-                users = File.ReadLines(Path);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                users = Enumerable.Empty<string>();
-            }
-
-            return users;
-        }
-        
-        private bool WriteUserOld(User user)
-        {
-            if (Exists(user.PhoneNumber))
-            {
-                return false;
-            }
-            
-            File.AppendAllText(Path, user + "\n");
-            return true;
         }
     }
 }
